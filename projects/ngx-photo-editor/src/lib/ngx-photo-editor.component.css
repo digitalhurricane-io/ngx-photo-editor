@@ -1,6 +1,23 @@
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+.pe-con {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.apply-button {
+  background-color: #3f51b5;
+  color: white;
+}
+
 .ngx-photo-editor-ngx-photo-editor-img-container {
   width: 100%;
   float: left;
+}
+
+.ngx-photo-editor-img-container {
+ height: 100%;
 }
 
 #ngx-photo-editor-image {
@@ -358,3 +375,17 @@
 }
 
 
+.ngx-photo-editor-footer {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.ngx-photo-editor-footer button {
+  min-width: 100px;
+}
+
+.ngx-photo-editor-footer button:first-child {
+  margin-right: 10px;
+}

@@ -1,7 +1,7 @@
 import {AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import Cropper from 'cropperjs';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import ViewMode = Cropper.ViewMode;
+import { MatDialog, MatDialogRef } from '@angular/material';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -58,10 +58,12 @@ export class NgxPhotoEditorComponent {
 
   isFormatDefined = false;
 
+  dialogRef!: MatDialogRef<unknown, any>;
+
   @Output() imageCropped = new EventEmitter<CroppedEvent>();
   imageLoaded = false;
 
-  constructor(private modalService: NgbModal) {
+  constructor(private matDialog: MatDialog) {
   }
 
   @Input() set imageQuality(value: number) {
@@ -235,6 +237,8 @@ export class NgxPhotoEditorComponent {
 
   export() {
 
+    this.dialogRef.close();
+
     let cropedImage;
     if (this.resizeToWidth && this.resizeToHeight) {
       cropedImage = this.cropper.getCroppedCanvas({
@@ -285,7 +289,17 @@ export class NgxPhotoEditorComponent {
   }
 
   open() {
-    this.modalService.open(this.content, {size: this.modalSize, centered: this.modalCentered, backdrop: 'static'});
+    this.dialogRef = this.matDialog.open(this.content, {
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+});
+  }
+
+  cancel() {
+    this.dialogRef.close();
+    this.imageLoaded = false;
   }
 }
 
