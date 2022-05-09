@@ -1,9 +1,18 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
+.ngxpe mat-dialog-container {
+  padding: 10px 10px 15px 10px !important;
+}
+
 .pe-con {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.ngx-photo-editor-modal-body {
+  position: relative;
+  flex: 1 1 auto;
 }
 
 .apply-button {

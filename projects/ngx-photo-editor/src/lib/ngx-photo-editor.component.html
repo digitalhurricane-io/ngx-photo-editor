@@ -1,8 +1,7 @@
 <ng-template id="ngx-photo-editor-modal" #ngxPhotoEditorContent>
   <div class="pe-con">
     <div [style.backgroundColor]="darkTheme?'#36393F':'#D8D8D8'"
-         class="modal-body"
-         style="padding: 0">
+         class="ngx-photo-editor-modal-body">
       <h5 *ngIf="!hideModalHeader"
           [style.color]="darkTheme?'white':'black'"
           style="margin-bottom: 16px">{{modalTitle}}</h5>
@@ -21,9 +20,7 @@
              id="ngx-photo-editor-image">
       </div>
     </div>
-    <!--  <div style="padding: 5px 16px" [style.backgroundColor]="darkTheme?'#36393F':'#D8D8D8'">-->
-    <!--    <input type="range" style="height: 1px; margin: 0" class="custom-range" max="1" min="0" value="0" step="0.1" id="customRange1" (change)="zoom($event)">-->
-    <!--  </div>-->
+
     <div class="ngx-photo-editor-icons-container">
       <svg *ngIf="showCropButton"
            (click)="crop()"
