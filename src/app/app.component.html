@@ -24,10 +24,13 @@
   [imageChangedEvent]="imageChangedEvent"
   [imageUrl]="imageUrl"
   (imageCropped)="imageCropped($event)"
+  [cropBoxResizable]="false"
   imageFormat="png"
-  [aspectRatio]="4/3"
+  [aspectRatio]="1"
   [viewMode]="0"
-  [resizeToWidth]="500"
+  [scaleCropBox]="true"
+  [desiredFinalWidth]="500"
+  [desiredFinalHeight]="500"
 >
 </ngx-photo-editor>
 

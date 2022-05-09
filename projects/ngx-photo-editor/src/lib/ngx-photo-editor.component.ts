@@ -21,7 +21,7 @@ export class NgxPhotoEditorComponent {
   @Input() modalTitle = 'Photo Editor';
   @Input() hideModalHeader = false;
   @Input() aspectRatio = 1;
-  @Input() autoCropArea = 1;
+  @Input() autoCropArea = .8;
   @Input() autoCrop = true;
   @Input() mask = true;
   @Input() guides = true;
@@ -37,6 +37,11 @@ export class NgxPhotoEditorComponent {
   @Input() roundCropper = false;
   @Input() canvasHeight = 400;
 
+  @Input() desiredFinalWidth: number;
+  @Input() desiredFinalHeight: number;
+  @Input() scaleCropBox: boolean; // set scaled dimensions based on desiredFinalWidth and desiredFinalHeight
+  @Input() minCropBoxWidth: number;
+  @Input() minCropBoxHeight: number;
   @Input() resizeToWidth: number;
   @Input() resizeToHeight: number;
   @Input() imageSmoothingEnabled = true;
@@ -116,6 +121,27 @@ export class NgxPhotoEditorComponent {
     }
   }
 
+  // Must be called on 'ready' event listener of image.
+  // When viewing the image to be cropped in the modal, the image is likely not it's natural size.
+  // The image is scaled. So we need to scale the cropper box as well. This will scale it 
+  // to the proper size based on our desired output width and height.
+  doScaleCropBox() {
+    const shouldNotScale = !this.scaleCropBox || this.desiredFinalWidth == undefined || this.desiredFinalHeight == undefined || this.desiredFinalWidth < 1 || this.desiredFinalHeight < 1;
+    if (shouldNotScale) {
+      return;
+    }
+
+    const imageData = this.cropper.getImageData();
+
+    const widthRatio = imageData.width / imageData.naturalWidth;
+    const cropperWidth = this.desiredFinalWidth * widthRatio;
+
+    const heightRatio = imageData.height / imageData.naturalHeight;
+    const cropperHeight = this.desiredFinalHeight * heightRatio;
+
+    this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight });
+  }
+
   onImageLoad(image) {
     image.addEventListener('ready', () => {
       if (this.roundCropper) {
@@ -123,6 +149,10 @@ export class NgxPhotoEditorComponent {
         (document.getElementsByClassName('cropper-face')[0] as HTMLElement).style.borderRadius = '50%';
       }
       this.imageLoaded = true;
+
+      console.log('getImageData(): ', this.cropper.getImageData());
+
+      this.doScaleCropBox();
     });
 
     this.cropper = new Cropper(image, {
@@ -137,7 +167,11 @@ export class NgxPhotoEditorComponent {
       zoomable: this.zoomable,
       cropBoxMovable: this.cropBoxMovable,
       cropBoxResizable: this.cropBoxResizable,
+      minCropBoxWidth: this.minCropBoxWidth,
+      minCropBoxHeight: this.minCropBoxHeight,
     });
+
+    
   }
 
   rotateRight() {
@@ -183,6 +217,11 @@ export class NgxPhotoEditorComponent {
   }
 
   export() {
+
+  //  console.log('getImageData(): ', this.cropper.getImageData());
+  //   console.log('getCropBoxData(): ', this.cropper.getCropBoxData());
+    //return;
+
     let cropedImage;
     if (this.resizeToWidth && this.resizeToHeight) {
       cropedImage = this.cropper.getCroppedCanvas({
@@ -208,6 +247,9 @@ export class NgxPhotoEditorComponent {
         imageSmoothingQuality: this.imageSmoothingQuality
       });
     }
+
+    this.downloadImage(cropedImage);
+
     this.outputImage = cropedImage.toDataURL('image/' + this.format, this.quality);
     cropedImage.toBlob(blob => {
       this.imageCropped.emit({
@@ -216,6 +258,17 @@ export class NgxPhotoEditorComponent {
       });
     }, 'image/' + this.format, this.quality / 100);
     this.imageLoaded = false;
+  }
+
+  downloadImage(croppedImage: any) {
+    const outputImage = croppedImage.toDataURL('image/' + this.format, this.quality).replace("image/png", "application/octet-stream");
+    const link = document.createElement('a');
+    link.addEventListener('click', function () {
+      link.href = outputImage;
+      link.download = "myimage.png";
+    }, false);
+
+    link.click();
   }
 
   open() {
