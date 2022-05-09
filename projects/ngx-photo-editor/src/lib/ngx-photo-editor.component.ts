@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import Cropper from 'cropperjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import ViewMode = Cropper.ViewMode;
@@ -18,6 +18,10 @@ export class NgxPhotoEditorComponent {
   public outputImage: string;
   prevZoom = 0;
 
+  @Input() dragMode = 'none';
+  @Input() showCropButton = true;
+  @Input() showFlipButtons = true;
+  @Input() imageMovable = true;
   @Input() modalTitle = 'Photo Editor';
   @Input() hideModalHeader = false;
   @Input() aspectRatio = 1;
@@ -132,6 +136,7 @@ export class NgxPhotoEditorComponent {
     }
 
     const imageData = this.cropper.getImageData();
+    console.log('imageData: ', imageData);
 
     const widthRatio = imageData.width / imageData.naturalWidth;
     const cropperWidth = this.desiredFinalWidth * widthRatio;
@@ -139,18 +144,27 @@ export class NgxPhotoEditorComponent {
     const heightRatio = imageData.height / imageData.naturalHeight;
     const cropperHeight = this.desiredFinalHeight * heightRatio;
 
-    this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight });
+    this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight});
+    const data = this.cropper.getCropBoxData();
+    console.log(this.cropper.getCropBoxData());
+
+    // todo: if image is taller than it is wide, the left offset will be incorrect since the canvas will be wider 
+    // than the image. The width is dynamic. So we need a way to get the width at runtime. Viewchild didn't work out.
+    // need to mess with it more.
+    const left = imageData.width / 2 - cropperWidth / 2;
+    const top = this.canvasHeight / 2 - (cropperHeight / 2);
+    this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight, left, top });
+    console.log(this.cropper.getCropBoxData());
   }
 
   onImageLoad(image) {
+
     image.addEventListener('ready', () => {
       if (this.roundCropper) {
         (document.getElementsByClassName('cropper-view-box')[0] as HTMLElement).style.borderRadius = '50%';
         (document.getElementsByClassName('cropper-face')[0] as HTMLElement).style.borderRadius = '50%';
       }
       this.imageLoaded = true;
-
-      console.log('getImageData(): ', this.cropper.getImageData());
 
       this.doScaleCropBox();
     });
@@ -165,6 +179,8 @@ export class NgxPhotoEditorComponent {
       viewMode: this.viewMode,
       scalable: this.scalable,
       zoomable: this.zoomable,
+      movable: this.imageMovable,
+      dragMode: this.dragMode as any,
       cropBoxMovable: this.cropBoxMovable,
       cropBoxResizable: this.cropBoxResizable,
       minCropBoxWidth: this.minCropBoxWidth,
@@ -214,13 +230,10 @@ export class NgxPhotoEditorComponent {
 
   reset() {
     this.cropper.reset();
+    this.doScaleCropBox();
   }
 
   export() {
-
-  //  console.log('getImageData(): ', this.cropper.getImageData());
-  //   console.log('getCropBoxData(): ', this.cropper.getCropBoxData());
-    //return;
 
     let cropedImage;
     if (this.resizeToWidth && this.resizeToHeight) {

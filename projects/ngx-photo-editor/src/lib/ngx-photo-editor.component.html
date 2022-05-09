@@ -14,30 +14,30 @@
   <!--    <input type="range" style="height: 1px; margin: 0" class="custom-range" max="1" min="0" value="0" step="0.1" id="customRange1" (change)="zoom($event)">-->
   <!--  </div>-->
   <div class="ngx-photo-editor-icons-container">
-    <svg (click)="crop()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="showCropButton" (click)="crop()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0V0z" fill="none"/>
       <path d="M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z"/>
     </svg>
-    <svg (click)="move()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="imageMovable" (click)="move()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0V0z" fill="none"/>
       <path
         d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/>
     </svg>
-    <svg (click)="zoomIn()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="zoomable" (click)="zoomIn()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0V0z" fill="none"/>
       <path
         d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z"/>
     </svg>
-    <svg (click)="zoomOut()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="zoomable" (click)="zoomOut()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0V0z" fill="none"/>
       <path
         d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"/>
     </svg>
-    <svg (click)="flipV()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="showFlipButtons" (click)="flipV()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0z" fill="none"/>
       <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/>
     </svg>
-    <svg (click)="flipH()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <svg *ngIf="showFlipButtons" (click)="flipH()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M0 0h24v24H0z" fill="none"/>
       <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
     </svg>
