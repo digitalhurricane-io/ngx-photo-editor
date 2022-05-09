@@ -13,6 +13,7 @@ export class AppComponent {
   imageUrl: any;
 
   fileChangeEvent(event: any) {
+    console.log('FCE');
     this.imageChangedEvent = event;
   }
 

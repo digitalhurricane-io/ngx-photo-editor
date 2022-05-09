@@ -40,6 +40,10 @@ export class NgxPhotoEditorComponent {
   @Input() darkTheme = true;
   @Input() roundCropper = false;
 
+  // If true, and desiredFinalWidth and desiredFinalHeight are defined, 
+  // then if a user tries to load an image that is smaller than desiredFinalWidth or desiredFinalHeight,
+  // the imageTooSmall event will be emitted and the image will not be loaded.
+  @Input() requireDesiredFinalDimensions = true; 
   @Input() desiredFinalWidth: number;
   @Input() desiredFinalHeight: number;
   @Input() scaleCropBox: boolean; // set scaled dimensions based on desiredFinalWidth and desiredFinalHeight
@@ -49,6 +53,13 @@ export class NgxPhotoEditorComponent {
   @Input() resizeToHeight: number;
   @Input() imageSmoothingEnabled = true;
   @Input() imageSmoothingQuality: ImageSmoothingQuality = 'high';
+
+  // Exposed for internationalization
+  @Input() cancelButtonText: string = "Cancel";
+  @Input() applyButtonText: string = "Apply";
+
+  @Output() imageTooSmall = new EventEmitter<dimensions>();
+
   url: string;
   lastUpdate = Date.now();
 
@@ -97,6 +108,7 @@ export class NgxPhotoEditorComponent {
     }
   }
 
+  // When user uploads a file, this event will be changed.
   @Input() set imageChangedEvent(event: any) {
     if (event) {
       const file = event.target.files[0];
@@ -106,7 +118,20 @@ export class NgxPhotoEditorComponent {
         }
         const reader = new FileReader();
         reader.onload = (ev: any) => {
-          this.imageUrl = ev.target.result;
+          const imageUrl = ev.target.result;
+
+          this.checkImageDimensions(imageUrl).then(() => {
+            // Open dialog
+            this.imageUrl = imageUrl;
+          })
+            .catch((d: dimensions) => {
+              // Image is too small, emit an event and do not open the dialog
+              this.imageTooSmall.emit(d)
+            })
+            .finally(() => {
+              // Ensures that if the user selects the same file again, the change event will still be fired.
+              event.target.value = null;
+            });
         };
         reader.readAsDataURL(event.target.files[0]);
       }
@@ -124,6 +149,29 @@ export class NgxPhotoEditorComponent {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  // return a promise that rejects if image dimensions are less than 
+  // this.desiredFinalHeight and this.desiredFinalWidth and this.requireDesiredFinalDimensions is true
+  checkImageDimensions(url: string) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.src = url;
+
+      image.onload = () => {
+        // access image size here 
+        const dimensions = { width: image.width, height: image.height };
+
+        if (this.requireDesiredFinalDimensions && this.desiredFinalHeight != undefined && this.desiredFinalWidth != undefined) {
+          if (image.width < this.desiredFinalWidth || image.height < this.desiredFinalHeight) {
+            reject(dimensions);
+            return;
+          }
+        }
+
+        resolve(dimensions);
+      };
+    });
   }
 
   // Must be called on 'ready' event listener of image.
@@ -186,7 +234,6 @@ export class NgxPhotoEditorComponent {
       minCropBoxHeight: this.minCropBoxHeight,
     });
 
-    
   }
 
   rotateRight() {
@@ -310,3 +357,8 @@ export interface CroppedEvent {
 export type imageFormat = 'gif' | 'jpeg' | 'tiff' | 'png' | 'webp' | 'bmp';
 
 export type size = 'sm' | 'lg' | 'xl' | string;
+
+export interface dimensions {
+  width: number;
+  height: number;
+}
