@@ -39,7 +39,6 @@ export class NgxPhotoEditorComponent {
   @Input() cropBoxResizable = true;
   @Input() darkTheme = true;
   @Input() roundCropper = false;
-  @Input() canvasHeight = 400;
 
   @Input() desiredFinalWidth: number;
   @Input() desiredFinalHeight: number;
@@ -138,7 +137,6 @@ export class NgxPhotoEditorComponent {
     }
 
     const imageData = this.cropper.getImageData();
-    console.log('imageData: ', imageData);
 
     const widthRatio = imageData.width / imageData.naturalWidth;
     const cropperWidth = this.desiredFinalWidth * widthRatio;
@@ -147,16 +145,15 @@ export class NgxPhotoEditorComponent {
     const cropperHeight = this.desiredFinalHeight * heightRatio;
 
     this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight});
-    const data = this.cropper.getCropBoxData();
-    console.log(this.cropper.getCropBoxData());
 
-    // todo: if image is taller than it is wide, the left offset will be incorrect since the canvas will be wider 
-    // than the image. The width is dynamic. So we need a way to get the width at runtime. Viewchild didn't work out.
-    // need to mess with it more.
-    const left = imageData.width / 2 - cropperWidth / 2;
-    const top = this.canvasHeight / 2 - (cropperHeight / 2);
+    this.centerCropper(cropperWidth, cropperHeight);
+  }
+
+  centerCropper(cropperWidth: number, cropperHeight: number) {
+    const box: HTMLElement = document.getElementById('ngx-photo-editor-img-container');
+    const left = box.clientWidth / 2 - (cropperWidth / 2);
+    const top = box.clientHeight / 2 - (cropperHeight / 2);
     this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight, left, top });
-    console.log(this.cropper.getCropBoxData());
   }
 
   onImageLoad(image) {
@@ -295,7 +292,8 @@ export class NgxPhotoEditorComponent {
       height: '100%',
       width: '100%',
       panelClass: 'ngxpe',
-});
+    });
+
   }
 
   cancel() {
