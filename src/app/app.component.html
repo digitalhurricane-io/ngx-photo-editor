@@ -14,13 +14,12 @@
     </div>
   </form>
   <div class="bg-dark p-5" style="text-align: -webkit-center; height: 400px">
-    <img *ngIf="imageUrl || imageChangedEvent" class="h-100 d-block img-fluid" [src]="base64" alt="">
+    <img class="h-100 d-block img-fluid" [src]="base64" alt="">
   </div>
 </div>
-<button (click)="imageUrl = 'https://images.pexels.com/photos/1231643/pexels-photo-1231643.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'"></button>
 
-<ngx-photo-editor [hideModalHeader]="true"
-                  [imageChangedEvent]="imageChangedEvent"
+<ngx-photo-editor #photoEditor 
+                  [fileChangedEvent]="fileChangedEvent"
                   [imageUrl]="imageUrl"
                   (imageCropped)="imageCropped($event)"
                   [cropBoxResizable]="true"
@@ -35,3 +34,4 @@
 </ngx-photo-editor>
 
 
+<button (click)="export()">Export</button>

@@ -1,8 +1,7 @@
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
-.ngxpe mat-dialog-container {
+/* .ngxpe mat-dialog-container {
   padding: 10px 10px 15px 10px !important;
-}
+} */
 
 .pe-con {
   display: flex;
@@ -20,11 +19,6 @@
   color: white;
 }
 
-.ngx-photo-editor-ngx-photo-editor-img-container {
-  width: 100%;
-  float: left;
-}
-
 #ngx-photo-editor-img-container {
  height: 100%;
 }
@@ -32,12 +26,6 @@
 #ngx-photo-editor-image {
   display: block;
   max-width: 100%;
-}
-
-.ngx-photo-editor-modal-content {
-  border: none;
-  border-radius: 5px;
-  overflow: hidden;
 }
 
 .ngx-photo-editor-icons-container {

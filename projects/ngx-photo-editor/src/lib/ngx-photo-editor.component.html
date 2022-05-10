@@ -1,10 +1,8 @@
-<ng-template id="ngx-photo-editor-modal" #ngxPhotoEditorContent>
+
   <div class="pe-con">
     <div [style.backgroundColor]="darkTheme?'#36393F':'#D8D8D8'"
          class="ngx-photo-editor-modal-body">
-      <h5 *ngIf="!hideModalHeader"
-          [style.color]="darkTheme?'white':'black'"
-          style="margin-bottom: 16px">{{modalTitle}}</h5>
+
       <div id="ngx-photo-editor-img-container">
         <div *ngIf="!imageLoaded"
              class="w-100 h-100 d-flex justify-content-center align-items-center text-light">
@@ -104,13 +102,6 @@
       </svg>
     </div>
 
-    <div class="ngx-photo-editor-footer">
-      <button class="apply-button" mat-raised-button
-              (click)="export()">{{ applyButtonText }}</button>
-      <button mat-raised-button
-              (click)="cancel()">{{ cancelButtonText }}</button>
-    </div>
   </div>
   
   
-</ng-template>

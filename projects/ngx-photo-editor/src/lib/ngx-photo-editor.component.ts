@@ -1,7 +1,7 @@
 import {AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import Cropper from 'cropperjs';
 import ViewMode = Cropper.ViewMode;
-import { MatDialog, MatDialogRef } from '@angular/material';
+
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -12,8 +12,6 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 })
 export class NgxPhotoEditorComponent {
 
-  @ViewChild('ngxPhotoEditorContent', {static: false}) content;
-
   public cropper: Cropper;
   public outputImage: string;
   prevZoom = 0;
@@ -22,8 +20,6 @@ export class NgxPhotoEditorComponent {
   @Input() showCropButton = true;
   @Input() showFlipButtons = true;
   @Input() imageMovable = true;
-  @Input() modalTitle = 'Photo Editor';
-  @Input() hideModalHeader = false;
   @Input() aspectRatio = 1;
   @Input() autoCropArea = .8;
   @Input() autoCrop = true;
@@ -31,7 +27,6 @@ export class NgxPhotoEditorComponent {
   @Input() guides = true;
   @Input() centerIndicator = true;
   @Input() viewMode: ViewMode = 0;
-  @Input() modalCentered = false;
   @Input() scalable = true;
   @Input() zoomable = true;
   @Input() cropBoxMovable = true;
@@ -53,12 +48,9 @@ export class NgxPhotoEditorComponent {
   @Input() imageSmoothingEnabled = true;
   @Input() imageSmoothingQuality: ImageSmoothingQuality = 'high';
 
-  // Exposed for internationalization
-  @Input() cancelButtonText: string = "Cancel";
-  @Input() applyButtonText: string = "Apply";
-
   @Output() imageTooSmall = new EventEmitter<Dimensions>();
 
+  // Exposed for internationalization
   @Input() tooltipCropText = "Move Cropper";
   @Input() tooltipDragText = "Move Image";
   @Input() tooltipRotateLeftText = "Rotate Left";
@@ -73,12 +65,10 @@ export class NgxPhotoEditorComponent {
 
   isFormatDefined = false;
 
-  dialogRef!: MatDialogRef<unknown, any>;
-
   @Output() imageCropped = new EventEmitter<CroppedEvent>();
   imageLoaded = false;
 
-  constructor(private matDialog: MatDialog) {
+  constructor() {
   }
 
   @Input() set imageQuality(value: number) {
@@ -95,13 +85,22 @@ export class NgxPhotoEditorComponent {
   }
 
   @Input() set imageUrl(url: string) {
-    if (url) {
+    if (!url) {
+      return;
+    }
+
+    // If image url was the same as previous, the load event on the <img> will not fire.
+    // so set to empty string first.
+    this.url = ''; 
+
+    // Give change detection time to run.
+    setTimeout(() => {
       this.url = url;
       if (this.lastUpdate !== Date.now()) {
-        this.open();
         this.lastUpdate = Date.now();
       }
-    }
+    }, 0);
+      
   }
 
   @Input() set imageBase64(base64: string) {
@@ -114,33 +113,36 @@ export class NgxPhotoEditorComponent {
   }
 
   // When user uploads a file, this event will be changed.
-  @Input() set imageChangedEvent(event: any) {
-    if (event) {
-      const file = event.target.files[0];
-      if (file && (/\.(gif|jpe?g|tiff|png|webp|bmp)$/i).test(file.name)) {
-        if (!this.isFormatDefined) {
-          this.format = event.target.files[0].type.split('/')[1];
-        }
-        const reader = new FileReader();
-        reader.onload = (ev: any) => {
-          const imageUrl = ev.target.result;
-
-          this.checkImageDimensions(imageUrl).then(() => {
-            // Open dialog
-            this.imageUrl = imageUrl;
-          })
-            .catch((d: Dimensions) => {
-              // Image is too small, emit an event and do not open the dialog
-              this.imageTooSmall.emit(d)
-            })
-            .finally(() => {
-              // Ensures that if the user selects the same file again, the change event will still be fired.
-              event.target.value = null;
-            });
-        };
-        reader.readAsDataURL(event.target.files[0]);
-      }
+  @Input() set fileChangedEvent(event: any) {
+    if (!event) {
+      return;
     }
+    
+    const file = event.target.files[0];
+    if (file && (/\.(gif|jpe?g|tiff|png|webp|bmp)$/i).test(file.name)) {
+      if (!this.isFormatDefined) {
+        this.format = event.target.files[0].type.split('/')[1];
+      }
+      const reader = new FileReader();
+      reader.onload = (ev: any) => {
+        const imageUrl = ev.target.result;
+
+        this.checkImageDimensions(imageUrl).then(() => {
+          // Open dialog
+          this.imageUrl = imageUrl;
+        })
+          .catch((d: Dimensions) => {
+            // Image is too small, emit an event and do not open the dialog
+            this.imageTooSmall.emit(d)
+          })
+          .finally(() => {
+            // Ensures that if the user selects the same file again, the change event will still be fired.
+            event.target.value = null;
+          });
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    
   }
 
   @Input() set imageFile(file: File) {
@@ -158,7 +160,7 @@ export class NgxPhotoEditorComponent {
 
   // return a promise that rejects if image Dimensions are less than 
   // this.desiredFinalHeight and this.desiredFinalWidth and this.requireDesiredFinalDimensions is true
-  checkImageDimensions(url: string) {
+  private checkImageDimensions(url: string) {
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.src = url;
@@ -183,7 +185,7 @@ export class NgxPhotoEditorComponent {
   // When viewing the image to be cropped in the modal, the image is likely not it's natural size.
   // The image is scaled. So we need to scale the cropper box as well. This will scale it 
   // to the proper size based on our desired output width and height.
-  doScaleCropBox() {
+  private doScaleCropBox() {
     if (!this.minFinalDimensions) {
       return;
     }
@@ -201,7 +203,7 @@ export class NgxPhotoEditorComponent {
     this.centerCropper(d.width, d.height);
   }
 
-  minScaledCropperDimensions(minFinalWidth: number, minFinalHeight: number): Dimensions {
+  private minScaledCropperDimensions(minFinalWidth: number, minFinalHeight: number): Dimensions {
     if (minFinalWidth === 0 && minFinalHeight === 0) {
       return {width: 0, height: 0};
     }
@@ -217,7 +219,7 @@ export class NgxPhotoEditorComponent {
     return { width: cropperWidth, height: cropperHeight };
   }
 
-  centerCropper(cropperWidth: number, cropperHeight: number) {
+  private centerCropper(cropperWidth: number, cropperHeight: number) {
     const box: HTMLElement = document.getElementById('ngx-photo-editor-img-container');
     const left = box.clientWidth / 2 - (cropperWidth / 2);
     const top = box.clientHeight / 2 - (cropperHeight / 2);
@@ -225,6 +227,10 @@ export class NgxPhotoEditorComponent {
   }
 
   onImageLoad(image) {
+
+    if (this.cropper) {
+      this.cropper.destroy();
+    }
 
     image.addEventListener('ready', () => {
       if (this.roundCropper) {
@@ -260,7 +266,7 @@ export class NgxPhotoEditorComponent {
   }
 
   // should be called on every cropmove event
-  enforceMinCropBoxDimensions() {
+  private enforceMinCropBoxDimensions() {
     if (!this.minFinalDimensions) {
       return;
     }
@@ -335,8 +341,6 @@ export class NgxPhotoEditorComponent {
 
   export() {
 
-    this.dialogRef.close();
-
     let croppedImage;
     if (this.resizeToWidth && this.resizeToHeight) {
       croppedImage = this.cropper.getCroppedCanvas({
@@ -371,6 +375,8 @@ export class NgxPhotoEditorComponent {
       });
     }, 'image/' + this.format, this.quality / 100);
     this.imageLoaded = false;
+
+    this.cropper.destroy();
   }
 
   downloadImage(croppedImage: any) {
@@ -384,19 +390,7 @@ export class NgxPhotoEditorComponent {
     link.click();
   }
 
-  open() {
-    this.dialogRef = this.matDialog.open(this.content, {
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      height: '100%',
-      width: '100%',
-      panelClass: 'ngxpe',
-    });
-
-  }
-
   cancel() {
-    this.dialogRef.close();
     this.imageLoaded = false;
   }
 }

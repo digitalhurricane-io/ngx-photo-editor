@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {CroppedEvent} from 'ngx-photo-editor';
+import {ChangeDetectorRef, Component, ViewChild} from '@angular/core';
+import {CroppedEvent, NgxPhotoEditorComponent} from 'ngx-photo-editor';
 
 @Component({
   selector: 'app-root',
@@ -7,27 +7,31 @@ import {CroppedEvent} from 'ngx-photo-editor';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  @ViewChild('photoEditor', {static: false}) photoEditor: NgxPhotoEditorComponent;
 
   base64: any;
-  imageChangedEvent: any;
+  fileChangedEvent: any;
   imageUrl: any;
 
+  constructor(private cd: ChangeDetectorRef) {}
+
   fileChangeEvent(event: any) {
-    console.log('FCE');
-    this.imageChangedEvent = event;
+    this.fileChangedEvent = event;
   }
 
 
   imageCropped(event: CroppedEvent) {
     console.log(event);
     this.base64 = event.base64;
+    this.cd.detectChanges();
   }
 
   gotoGithub() {
     window.open('https://github.com/AhamedBilal/ngx-photo-editor');
   }
 
-  // gotoNPM() {
-  //   window.open('https://www.npmjs.com/package/ngx-photo-editor');
-  // }
+  export() {
+    this.photoEditor.export();
+  }
+
 }
