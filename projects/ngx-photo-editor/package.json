@@ -1,5 +1,5 @@
 {
-  "name": "ngx-photo-editor",
+  "name": "@digitalhurricane/ngx-photo-editor-app",
   "version": "0.3.8",
   "description": "An image cropper for Angular",
   "author": {
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AhamedBilal/ngx-photo-editor.git"
+    "url": "github.com/digitalhurricane-io/ngx-photo-editor"
   },
   "bugs": {
     "url": "https://github.com/AhamedBilal/ngx-photo-editor/issues"
   },
-  "homepage": "https://github.com/AhamedBilal/ngx-photo-editor",
+  "homepage": "https://github.com/digitalhurricane-io/ngx-photo-editor",
   "keywords": [
     "angular",
     "angular 6",

@@ -9,6 +9,7 @@
     "lint": "ng lint",
     "deploy": "ng deploy --base-href=/ngx-photo-editor/",
     "e2e": "ng e2e",
+    "publish": "ng build ngx-photo-editor; npm publish --access=public",
     "build:lib": "ng build ngx-photo-editor",
     "test:lib": "ng test ngx-photo-editor",
     "lint:lib": "ng lint ngx-photo-editor"
