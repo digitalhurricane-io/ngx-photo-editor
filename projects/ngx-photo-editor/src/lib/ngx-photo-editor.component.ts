@@ -1,4 +1,4 @@
-import {AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
 import Cropper from 'cropperjs';
 import ViewMode = Cropper.ViewMode;
 
