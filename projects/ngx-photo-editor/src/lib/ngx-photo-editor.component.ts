@@ -68,8 +68,8 @@ export class NgxPhotoEditorComponent {
   url: string;
   lastUpdate = Date.now();
 
-  @Input() format = 'png';
-  @Input() quality = 92;
+  format = 'png';
+  quality = 92;
 
   isFormatDefined = false;
 
@@ -261,6 +261,9 @@ export class NgxPhotoEditorComponent {
 
   // should be called on every cropmove event
   enforceMinCropBoxDimensions() {
+    if (!this.minFinalDimensions) {
+      return;
+    }
 
     const data = this.cropper.getCropBoxData();
     const minDimensions = this.minScaledCropperDimensions(this.minFinalDimensions.width, this.minFinalDimensions.height);
@@ -334,36 +337,34 @@ export class NgxPhotoEditorComponent {
 
     this.dialogRef.close();
 
-    let cropedImage;
+    let croppedImage;
     if (this.resizeToWidth && this.resizeToHeight) {
-      cropedImage = this.cropper.getCroppedCanvas({
+      croppedImage = this.cropper.getCroppedCanvas({
         width: this.resizeToWidth,
         imageSmoothingEnabled: this.imageSmoothingEnabled,
         imageSmoothingQuality: this.imageSmoothingQuality
       });
     } else if (this.resizeToHeight) {
-      cropedImage = this.cropper.getCroppedCanvas({
+      croppedImage = this.cropper.getCroppedCanvas({
         height: this.resizeToHeight,
         imageSmoothingEnabled: this.imageSmoothingEnabled,
         imageSmoothingQuality: this.imageSmoothingQuality
       });
     } else if (this.resizeToWidth) {
-      cropedImage = this.cropper.getCroppedCanvas({
+      croppedImage = this.cropper.getCroppedCanvas({
         width: this.resizeToWidth,
         imageSmoothingEnabled: this.imageSmoothingEnabled,
         imageSmoothingQuality: this.imageSmoothingQuality
       });
     } else {
-      cropedImage = this.cropper.getCroppedCanvas({
+      croppedImage = this.cropper.getCroppedCanvas({
         imageSmoothingEnabled: this.imageSmoothingEnabled,
         imageSmoothingQuality: this.imageSmoothingQuality
       });
     }
 
-    this.downloadImage(cropedImage);
-
-    this.outputImage = cropedImage.toDataURL('image/' + this.format, this.quality);
-    cropedImage.toBlob(blob => {
+    this.outputImage = croppedImage.toDataURL('image/' + this.format, this.quality);
+    croppedImage.toBlob(blob => {
       this.imageCropped.emit({
         base64: this.outputImage,
         file: new File([blob], Date.now() + '.' + this.format, {type: 'image/' + this.format})
