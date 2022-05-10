@@ -19,24 +19,19 @@
 </div>
 <button (click)="imageUrl = 'https://images.pexels.com/photos/1231643/pexels-photo-1231643.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'"></button>
 
-<ngx-photo-editor
-  [hideModalHeader]="true"
-  [imageChangedEvent]="imageChangedEvent"
-  [imageUrl]="imageUrl"
-  (imageCropped)="imageCropped($event)"
-  [cropBoxResizable]="false"
-  imageFormat="png"
-  [aspectRatio]="1"
-  [viewMode]="0"
-  [scaleCropBox]="true"
-  [desiredFinalWidth]="500"
-  [desiredFinalHeight]="500"
-  [scalable]="true"
-  [zoomable]="false"
-  [showCropButton]="false"
-  [showFlipButtons]="false"
-  [imageMovable]="false"
-  [modalSize]="'xl'"
->
+<ngx-photo-editor [hideModalHeader]="true"
+                  [imageChangedEvent]="imageChangedEvent"
+                  [imageUrl]="imageUrl"
+                  (imageCropped)="imageCropped($event)"
+                  [cropBoxResizable]="true"
+                  imageFormat="png"
+                  [aspectRatio]="1"
+                  [viewMode]="0"
+                  [scalable]="true"
+                  [zoomable]="false"
+                  [minFinalDimensions]="{width: 500, height: 500}"
+                  [showFlipButtons]="false"
+                  [imageMovable]="true">
 </ngx-photo-editor>
+
 

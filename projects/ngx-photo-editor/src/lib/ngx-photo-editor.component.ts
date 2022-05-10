@@ -31,7 +31,6 @@ export class NgxPhotoEditorComponent {
   @Input() guides = true;
   @Input() centerIndicator = true;
   @Input() viewMode: ViewMode = 0;
-  @Input() modalSize: size;
   @Input() modalCentered = false;
   @Input() scalable = true;
   @Input() zoomable = true;
@@ -40,15 +39,15 @@ export class NgxPhotoEditorComponent {
   @Input() darkTheme = true;
   @Input() roundCropper = false;
 
-  // If true, and desiredFinalWidth and desiredFinalHeight are defined, 
-  // then if a user tries to load an image that is smaller than desiredFinalWidth or desiredFinalHeight,
+  // If a user tries to load an image that is smaller than specified Dimensions,
   // the imageTooSmall event will be emitted and the image will not be loaded.
-  @Input() requireDesiredFinalDimensions = true; 
-  @Input() desiredFinalWidth: number;
-  @Input() desiredFinalHeight: number;
-  @Input() scaleCropBox: boolean; // set scaled dimensions based on desiredFinalWidth and desiredFinalHeight
-  @Input() minCropBoxWidth: number;
-  @Input() minCropBoxHeight: number;
+  @Input() minImageDimensions: Dimensions; 
+
+  // Cropbox cannot be scaled lower than this
+  @Input() minFinalDimensions: Dimensions;
+
+  @Input() minCropBoxWidthRelativeToPage: number;
+  @Input() minCropBoxHeightRelativeToPage: number;
   @Input() resizeToWidth: number;
   @Input() resizeToHeight: number;
   @Input() imageSmoothingEnabled = true;
@@ -58,7 +57,7 @@ export class NgxPhotoEditorComponent {
   @Input() cancelButtonText: string = "Cancel";
   @Input() applyButtonText: string = "Apply";
 
-  @Output() imageTooSmall = new EventEmitter<dimensions>();
+  @Output() imageTooSmall = new EventEmitter<Dimensions>();
 
   url: string;
   lastUpdate = Date.now();
@@ -124,7 +123,7 @@ export class NgxPhotoEditorComponent {
             // Open dialog
             this.imageUrl = imageUrl;
           })
-            .catch((d: dimensions) => {
+            .catch((d: Dimensions) => {
               // Image is too small, emit an event and do not open the dialog
               this.imageTooSmall.emit(d)
             })
@@ -151,7 +150,7 @@ export class NgxPhotoEditorComponent {
     }
   }
 
-  // return a promise that rejects if image dimensions are less than 
+  // return a promise that rejects if image Dimensions are less than 
   // this.desiredFinalHeight and this.desiredFinalWidth and this.requireDesiredFinalDimensions is true
   checkImageDimensions(url: string) {
     return new Promise((resolve, reject) => {
@@ -162,8 +161,8 @@ export class NgxPhotoEditorComponent {
         // access image size here 
         const dimensions = { width: image.width, height: image.height };
 
-        if (this.requireDesiredFinalDimensions && this.desiredFinalHeight != undefined && this.desiredFinalWidth != undefined) {
-          if (image.width < this.desiredFinalWidth || image.height < this.desiredFinalHeight) {
+        if (this.minImageDimensions) {
+          if (image.width < this.minImageDimensions.width || image.height < this.minImageDimensions.height) {
             reject(dimensions);
             return;
           }
@@ -179,22 +178,38 @@ export class NgxPhotoEditorComponent {
   // The image is scaled. So we need to scale the cropper box as well. This will scale it 
   // to the proper size based on our desired output width and height.
   doScaleCropBox() {
-    const shouldNotScale = !this.scaleCropBox || this.desiredFinalWidth == undefined || this.desiredFinalHeight == undefined || this.desiredFinalWidth < 1 || this.desiredFinalHeight < 1;
-    if (shouldNotScale) {
+    if (!this.minFinalDimensions) {
       return;
+    }
+
+    let width = this.minFinalDimensions.width;
+    let height = this.minFinalDimensions.height;
+
+    if (width === 0 && height === 0) {
+      width = 500;
+      height = 500;
+    }
+
+    const d = this.minScaledCropperDimensions(width, height);
+
+    this.centerCropper(d.width, d.height);
+  }
+
+  // todo: memoize
+  minScaledCropperDimensions(minFinalWidth: number, minFinalHeight: number): Dimensions {
+    if (minFinalWidth === 0 && minFinalHeight === 0) {
+      return {width: 0, height: 0};
     }
 
     const imageData = this.cropper.getImageData();
 
     const widthRatio = imageData.width / imageData.naturalWidth;
-    const cropperWidth = this.desiredFinalWidth * widthRatio;
+    const cropperWidth = minFinalWidth * widthRatio;
 
     const heightRatio = imageData.height / imageData.naturalHeight;
-    const cropperHeight = this.desiredFinalHeight * heightRatio;
+    const cropperHeight = minFinalHeight * heightRatio;
 
-    this.cropper.setCropBoxData({ width: cropperWidth, height: cropperHeight});
-
-    this.centerCropper(cropperWidth, cropperHeight);
+    return { width: cropperWidth, height: cropperHeight };
   }
 
   centerCropper(cropperWidth: number, cropperHeight: number) {
@@ -230,10 +245,40 @@ export class NgxPhotoEditorComponent {
       dragMode: this.dragMode as any,
       cropBoxMovable: this.cropBoxMovable,
       cropBoxResizable: this.cropBoxResizable,
-      minCropBoxWidth: this.minCropBoxWidth,
-      minCropBoxHeight: this.minCropBoxHeight,
+      minCropBoxWidth: this.minCropBoxWidthRelativeToPage,
+      minCropBoxHeight: this.minCropBoxHeightRelativeToPage,
+      cropmove: () => {
+        return this.enforceMinCropBoxDimensions();
+      }
     });
 
+  }
+
+  // should be called on every cropmove event
+  enforceMinCropBoxDimensions() {
+
+    const data = this.cropper.getCropBoxData();
+    const minDimensions = this.minScaledCropperDimensions(this.minFinalDimensions.width, this.minFinalDimensions.height);
+
+    const isTooSmall = data.width < minDimensions.width || data.height < minDimensions.height;
+
+    if (isTooSmall) {
+
+      const newDimensions = { width: data.width, height: data.height };
+
+      if (data.width < minDimensions.width) {
+        newDimensions.width = minDimensions.width;
+      }
+      if (data.height < minDimensions.height) {
+        newDimensions.height = minDimensions.height;
+      }
+
+      // resize crop box
+      this.cropper.setCropBoxData({ width: newDimensions.width, height: newDimensions.height });
+
+      return false; // stop crop move
+    }
+    return true; // continue crop move
   }
 
   rotateRight() {
@@ -245,7 +290,8 @@ export class NgxPhotoEditorComponent {
   }
 
   crop() {
-    this.cropper.setDragMode('crop');
+    this.cropper.setDragMode('none');
+    //this.cropper.setDragMode('crop');
   }
 
   move() {
@@ -356,9 +402,7 @@ export interface CroppedEvent {
 
 export type imageFormat = 'gif' | 'jpeg' | 'tiff' | 'png' | 'webp' | 'bmp';
 
-export type size = 'sm' | 'lg' | 'xl' | string;
-
-export interface dimensions {
+export interface Dimensions {
   width: number;
   height: number;
 }
