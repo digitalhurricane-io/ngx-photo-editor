@@ -1,4 +1,2 @@
 
 - Add material tooltips for image edit buttons
-
-- Memoize minScaledCropperDimensions() as it is called very frequently

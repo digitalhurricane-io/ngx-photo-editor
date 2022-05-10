@@ -59,11 +59,17 @@ export class NgxPhotoEditorComponent {
 
   @Output() imageTooSmall = new EventEmitter<Dimensions>();
 
+  @Input() tooltipCropText = "Move Cropper";
+  @Input() tooltipDragText = "Move Image";
+  @Input() tooltipRotateLeftText = "Rotate Left";
+  @Input() tooltipRotateRightText = "Rotate Right";
+  @Input() tooltipResetText = "Reset";
+
   url: string;
   lastUpdate = Date.now();
 
-  format = 'png';
-  quality = 92;
+  @Input() format = 'png';
+  @Input() quality = 92;
 
   isFormatDefined = false;
 
@@ -195,7 +201,6 @@ export class NgxPhotoEditorComponent {
     this.centerCropper(d.width, d.height);
   }
 
-  // todo: memoize
   minScaledCropperDimensions(minFinalWidth: number, minFinalHeight: number): Dimensions {
     if (minFinalWidth === 0 && minFinalHeight === 0) {
       return {width: 0, height: 0};

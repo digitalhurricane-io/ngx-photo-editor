@@ -1,7 +1,7 @@
 import {NgModule} from '@angular/core';
 import {NgxPhotoEditorComponent} from './ngx-photo-editor.component';
 import {CommonModule} from '@angular/common';
-import { MatButtonModule, MatDialogModule } from '@angular/material';
+import { MatButtonModule, MatDialogModule, MatTooltipModule } from '@angular/material';
 
 
 @NgModule({
@@ -10,6 +10,7 @@ import { MatButtonModule, MatDialogModule } from '@angular/material';
     CommonModule,
     MatDialogModule,
     MatButtonModule,
+    MatTooltipModule,
   ],
   exports: [NgxPhotoEditorComponent],
   entryComponents: [NgxPhotoEditorComponent]
