@@ -11,7 +11,7 @@ import { MatTooltipModule } from '@angular/material';
     MatTooltipModule,
   ],
   exports: [NgxPhotoEditorComponent],
-  entryComponents: [NgxPhotoEditorComponent]
+  entryComponents: []
 })
 export class NgxPhotoEditorModule {
 }
